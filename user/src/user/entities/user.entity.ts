@@ -4,6 +4,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { classToPlain, Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -14,6 +15,7 @@ export class User {
   email: string;
 
   @Column()
+  @Exclude({ toPlainOnly: true })
   password: string;
 
   @Column()
@@ -21,4 +23,8 @@ export class User {
 
   @CreateDateColumn()
   createdAt: string;
+
+  toJSON() {
+    return classToPlain(this);
+  }
 }

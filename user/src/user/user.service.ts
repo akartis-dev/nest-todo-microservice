@@ -1,15 +1,23 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { UserCredential, UserLoggedData } from './types/userType';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -67,7 +75,29 @@ export class UserService {
    * Login user and return jwt
    * @param arg0
    */
-  loginUser(arg0: { email: string; password: string }) {
-    throw new Error('Method not implemented.');
+  async loginUser(credential: UserCredential): Promise<UserLoggedData> {
+    const user = await this.userRepository.findOneBy({
+      email: credential.email,
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('', 'user not found');
+    }
+
+    const passwordValid = await bcrypt.compare(
+      credential?.password,
+      user.password,
+    );
+
+    if (!passwordValid) {
+      throw new UnauthorizedException('', 'wrong password');
+    }
+
+    const payload = { id: user.id, email: user.email };
+
+    return {
+      token: await this.jwtService.signAsync(payload),
+      user,
+    };
   }
 }
