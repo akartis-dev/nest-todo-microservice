@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "user",
+			"path": "user"
+		},
+		{
+			"name": "gateway",
+			"path": "gateway"
+		}
+	],
+	"settings": {
+		"jest.disabledWorkspaceFolders": [
+			"nestTestToDo"
+		]
+	}
+}
